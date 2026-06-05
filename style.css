@@ -1,0 +1,37 @@
+/* Google Webfonts import matching core designs */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,750;1,600&family=Space+Grotesk:wght@450;500;600;700&display=swap');
+
+/* Slide-up animations for newly updated layout cards */
+@keyframes slide-up {
+  0% {
+    opacity: 0;
+    transform: translateY(1.25rem);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Scrollbar aesthetic touches */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #E8E4D8;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #8C7B65;
+}

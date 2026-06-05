@@ -1,0 +1,757 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>잠일고 영어 퀴즈 챌린지</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              'natural-green': '#5D6D3E',
+              'natural-cream': '#FDFCF6',
+              'natural-sidebar': '#F7F5EE',
+              'natural-border': '#E8E4D8',
+              'natural-text': '#3E3B37',
+              'natural-tan': '#8C7B65',
+            },
+            fontFamily: {
+              sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+              serif: ['Playfair Display', 'Georgia', 'serif'],
+              display: ['Space Grotesk', 'sans-serif'],
+            }
+          }
+        }
+      }
+    </script>
+
+    <!-- Custom CSS Animations (Local style.css) -->
+    <link rel="stylesheet" href="/style.css" />
+
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+  </head>
+  <body class="min-h-screen bg-natural-cream text-natural-text antialiased font-sans pb-16">
+    <!-- Toast Notifications overlay -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 pointer-events-none flex flex-col gap-2"></div>
+
+    <!-- Visual Header -->
+    <div class="w-full bg-natural-sidebar border-b border-natural-border text-natural-text shadow-xs">
+      <div class="max-w-7xl mx-auto px-4 md:px-8 py-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div class="space-y-1 text-center sm:text-left">
+          <div class="flex items-center justify-center sm:justify-start gap-2">
+            <span class="bg-natural-green/10 text-natural-green px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider">
+              Jamilgo HS
+            </span>
+            <span class="flex items-center gap-1 text-[11px] text-natural-tan font-medium">
+              <i data-lucide="clock" class="w-3.5 h-3.5 text-natural-green"></i>
+              2026학년도 Grade 2 • English I
+            </span>
+          </div>
+          <h1 class="text-2xl md:text-3xl font-serif italic font-bold tracking-tight text-natural-text">
+            📚 잠일고 영어 퀴즈 챌린지
+          </h1>
+          <p class="text-xs text-natural-tan font-medium">
+            오늘의 핵심 구문 배열 훈련 및 수능 대입 기명 단어장 마스터
+          </p>
+        </div>
+
+        <div class="flex items-center gap-2.5 shrink-0 bg-[#E8E4D8]/30 p-1 rounded-2xl border border-natural-border">
+          <button
+            id="tab-btn-student"
+            class="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer bg-natural-green text-white shadow-md"
+          >
+            <i data-lucide="graduation-cap" class="w-4 h-4"></i>
+            학생 학습관
+          </button>
+          <button
+            id="tab-btn-teacher"
+            class="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer text-natural-tan hover:text-natural-text hover:bg-natural-sidebar/50"
+          >
+            <i data-lucide="settings" class="w-4 h-4"></i>
+            선생님 관리관
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Container Layout -->
+    <div class="max-w-7xl mx-auto px-4 md:px-8 mt-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
+      
+      <!-- SIDEBAR NAVIGATION panel -->
+      <div id="sidebar-layout-container" class="lg:col-span-3 space-y-6">
+        
+        <!-- Main Mode Menu Panel -->
+        <div class="bg-natural-sidebar rounded-3xl p-5 border border-natural-border shadow-xs space-y-2.5">
+          <span class="block text-[11px] font-bold text-natural-tan tracking-wider uppercase px-2 mb-1.5">
+            📚 모드 원클릭 선택
+          </span>
+
+          <button
+            id="menu-btn-vocab"
+            class="w-full flex items-center justify-between p-3.5 rounded-2xl text-left text-sm font-semibold transition-all group cursor-pointer bg-natural-green text-white shadow-md"
+          >
+            <div class="flex items-center gap-2.5">
+              <i data-lucide="book-open" class="w-5 h-5"></i>
+              <span>어휘 퀴즈 (단어장)</span>
+            </div>
+            <span id="sidebar-vocab-count" class="text-[11px] font-mono font-bold px-1.5 py-0.5 rounded-md bg-white/20 text-white">
+              0
+            </span>
+          </button>
+
+          <button
+            id="menu-btn-syntax"
+            class="w-full flex items-center justify-between p-3.5 rounded-2xl text-left text-sm font-semibold transition-all group cursor-pointer bg-transparent text-natural-text hover:bg-natural-sidebar"
+          >
+            <div class="flex items-center gap-2.5">
+              <i data-lucide="layers" class="w-5 h-5 text-natural-tan group-hover:text-natural-green"></i>
+              <span>구문 퀴즈 (서술형)</span>
+            </div>
+            <span id="sidebar-syntax-count" class="text-[11px] font-mono font-bold px-1.5 py-0.5 rounded-md bg-natural-border text-natural-text">
+              0
+            </span>
+          </button>
+
+          <button
+            id="menu-btn-wrongs"
+            class="w-full flex items-center justify-between p-3.5 rounded-2xl text-left text-sm font-semibold transition-all group cursor-pointer bg-transparent text-natural-text hover:bg-natural-sidebar"
+          >
+            <div class="flex items-center gap-2.5">
+              <i data-lucide="book-marked" class="w-5 h-5 text-natural-tan group-hover:text-natural-green"></i>
+              <span>나의 오답 노트</span>
+            </div>
+            <span id="sidebar-wrongs-count" class="text-[11px] font-mono font-bold px-1.5 py-0.5 rounded-md bg-natural-border text-natural-tan">
+              0
+            </span>
+          </button>
+        </div>
+
+        <!-- User Progress Panel -->
+        <div class="bg-white rounded-3xl p-5 border border-natural-border shadow-xs space-y-4">
+          <span class="block text-[11px] font-bold text-natural-tan tracking-wider uppercase px-2 mb-1">
+            📈 오늘의 기록실
+          </span>
+
+          <div class="grid grid-cols-2 gap-3.5">
+            <div class="bg-natural-sidebar p-3 rounded-2xl border border-natural-border text-center">
+              <span class="block text-[10px] text-natural-tan font-bold">어휘 진척률</span>
+              <span id="sidebar-vocab-progress-label" class="text-sm font-bold text-natural-text mt-1 block">
+                0 / 0
+              </span>
+            </div>
+            <div class="bg-natural-sidebar p-3 rounded-2xl border border-natural-border text-center">
+              <span class="block text-[10px] text-natural-tan font-bold">서술형 고지</span>
+              <span id="sidebar-syntax-progress-label" class="text-sm font-bold text-natural-text mt-1 block">
+                0 / 0
+              </span>
+            </div>
+          </div>
+
+          <div class="flex justify-between items-center px-1.5 text-xs text-natural-tan">
+            <div class="flex items-center gap-1">
+              <i data-lucide="calendar" class="w-3.5 h-3.5 text-natural-green"></i>
+              <span id="sidebar-date-label">오늘 날짜</span>
+            </div>
+            <button
+              id="btn-sidebar-reset-prog"
+              class="flex items-center gap-1 text-natural-green hover:text-natural-tan hover:underline transition-colors font-semibold cursor-pointer"
+            >
+              <i data-lucide="refresh-cw" class="w-3 h-3 text-natural-green"></i>
+              성적 리셋
+            </button>
+          </div>
+        </div>
+
+        <!-- Study Tip Card -->
+        <div class="bg-natural-sidebar text-[#3E3B37] rounded-3xl p-5 shadow-xs border border-natural-border relative overflow-hidden">
+          <div class="absolute -top-12 -right-12 w-28 h-28 bg-[#5D6D3E]/10 rounded-full blur-2xl"></div>
+          
+          <span class="text-[10px] bg-natural-green text-white px-2 py-0.5 rounded-md font-bold tracking-wider inline-block">
+            TODAY STUDY TIP
+          </span>
+          <h5 class="text-xs font-bold text-natural-text mt-2 flex items-center gap-1">
+            <i data-lucide="sparkles" class="w-3.5 h-3.5 text-natural-green shrink-0"></i>
+            서술형 어순 배열 Tip
+          </h5>
+          <p class="text-[11px] text-natural-tan mt-1 leading-relaxed">
+            수정된 구문 퀴즈는 영어 대소문자나 온점(.) 없이도 본래 스펠링 순서만 맞추면 똑똑하게 자동 정답 채점이 진행됩니다! 카드를 직접 클릭해 자연스러운 영어 어순을 귀로 익혀보세요.
+          </p>
+        </div>
+      </div>
+
+      <!-- MAIN BODY WORKSPACE -->
+      <div id="main-content-layout" class="lg:col-span-9">
+        
+        <!-- SECTION 1: VOCABULARY QUIZ VIEW -->
+        <div id="section-vocab" class="space-y-6">
+          <div class="flex items-center justify-between px-2">
+            <div class="flex items-center gap-2">
+              <i data-lucide="book-open" class="w-5 h-5 text-natural-green"></i>
+              <h3 class="text-lg font-bold text-natural-text">
+                📝 잠일고 2학년 필수 어휘 퀴즈
+              </h3>
+            </div>
+            <span class="text-xs text-natural-green font-semibold bg-natural-sidebar px-2.5 py-1 rounded-full border border-natural-border">
+              2022 개정 영어 I
+            </span>
+          </div>
+
+          <!-- Progress Panel -->
+          <div class="bg-white rounded-[24px] p-5 shadow-[0_10px_30px_rgba(93,109,62,0.03)] border border-natural-border flex items-center justify-between">
+            <div class="space-y-1 flex-1 mr-6">
+              <div class="flex justify-between text-xs text-natural-tan font-mono">
+                <span id="vocab-progress-text">PROGRESS: 1 / 10</span>
+                <span id="vocab-progress-percent">10%</span>
+              </div>
+              <div class="h-2 bg-natural-sidebar rounded-full overflow-hidden border border-natural-border/30">
+                <div id="vocab-progress-bar" class="h-full bg-natural-green rounded-full transition-all duration-300" style="width: 10%"></div>
+              </div>
+            </div>
+            <div class="bg-natural-sidebar px-4 py-2 rounded-xl text-center border border-natural-border shrink-0">
+              <span class="block text-[10px] text-natural-tan font-semibold tracking-wider font-sans">SCORE</span>
+              <span id="vocab-score-display" class="text-lg font-bold text-natural-green">0</span>
+            </div>
+          </div>
+
+          <!-- Active Question Box -->
+          <div id="vocab-quiz-card" class="bg-white rounded-[40px] shadow-[0_20px_50px_rgba(93,109,62,0.08)] border border-natural-border p-8 md:p-12 relative overflow-hidden animate-slide-up">
+            <div class="absolute top-0 right-0 w-32 h-32 bg-natural-sidebar rounded-full -mr-16 -mt-16 -z-10"></div>
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-natural-sidebar text-natural-green border border-natural-border mb-4">
+              어휘 학습
+            </span>
+
+            <div class="flex items-center justify-between mb-8">
+              <div class="flex items-center gap-3">
+                <h2 id="vocab-target-word" class="text-4xl md:text-5xl font-serif italic font-bold text-natural-text tracking-tight">
+                  comprehend
+                </h2>
+                <button
+                  id="btn-vocab-listen"
+                  class="p-2.5 rounded-xl hover:bg-natural-sidebar text-natural-tan hover:text-natural-green transition-all border border-transparent hover:border-natural-border cursor-pointer flex items-center justify-center"
+                  title="발음 듣기"
+                >
+                  <i data-lucide="volume-2" class="w-5 h-5"></i>
+                </button>
+              </div>
+              <span id="vocab-question-counter" class="text-xs text-natural-tan font-mono bg-natural-sidebar px-2.5 py-1 rounded-lg border border-natural-border">
+                Q_1
+              </span>
+            </div>
+
+            <p class="text-sm font-medium text-natural-tan mb-4">제시어의 올바른 뜻을 고르세요:</p>
+
+            <!-- Choice Options Grid -->
+            <div id="vocab-options-grid" class="grid grid-cols-1 md:grid-cols-2 gap-3.5 mb-8">
+              <!-- Rendered via JS -->
+            </div>
+
+            <div class="flex items-center justify-between border-t border-natural-border pt-6 gap-4">
+              <div id="vocab-feedback-wrapper">
+                <!-- Feedback state rendered via JS -->
+              </div>
+              <div class="shrink-0">
+                <button
+                  id="btn-vocab-submit"
+                  class="px-5 py-2.5 rounded-xl font-bold transition-all shadow-xs bg-natural-sidebar text-natural-tan/60 border border-natural-border/60 cursor-not-allowed"
+                  disabled
+                >
+                  정답 확인
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Completed Block (Hidden by default) -->
+          <div id="vocab-completion-card" class="hidden bg-white rounded-[40px] shadow-[0_20px_50px_rgba(93,109,62,0.08)] border border-natural-border p-8 md:p-12 text-center animate-slide-up">
+            <div class="w-20 h-20 bg-natural-sidebar border border-natural-border rounded-full flex items-center justify-center mx-auto mb-6">
+              <i data-lucide="award" class="w-12 h-12 text-natural-green"></i>
+            </div>
+            <h3 class="text-2xl font-serif font-bold text-natural-text mb-2">🎉 어휘 퀴즈 챌린지 완료!</h3>
+            <p class="text-natural-tan mb-6">오늘 준비한 단어 퀴즈를 모두 풀었습니다.</p>
+
+            <div class="grid grid-cols-2 gap-4 max-w-sm mx-auto mb-8">
+              <div class="bg-natural-sidebar p-4 rounded-2xl border border-natural-border">
+                <span class="block text-xs text-natural-tan font-medium">최종 점수</span>
+                <span id="vocab-final-score" class="text-2xl font-bold text-natural-text">0 <span class="text-sm font-normal text-natural-tan">/ 10</span></span>
+              </div>
+              <div class="bg-natural-sidebar p-4 rounded-2xl border border-natural-border">
+                <span class="block text-xs text-natural-tan font-medium">정답률</span>
+                <span id="vocab-final-rate" class="text-2xl font-bold text-natural-green">0%</span>
+              </div>
+            </div>
+
+            <button
+              id="btn-vocab-restart"
+              class="inline-flex items-center gap-2 px-6 py-3 bg-natural-green text-white rounded-xl font-medium hover:bg-opacity-90 transition-colors cursor-pointer shadow-sm"
+            >
+              <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+              처음부터 다시 도전하기
+            </button>
+          </div>
+        </div>
+
+        <!-- SECTION 2: SYNTAX QUIZ VIEW (Hidden by default) -->
+        <div id="section-syntax" class="hidden space-y-6">
+          <div class="flex items-center justify-between px-2">
+            <div class="flex items-center gap-2">
+              <i data-lucide="layers" class="w-5 h-5 text-natural-green"></i>
+              <h3 class="text-lg font-bold text-natural-text">
+                🧩 서술형 영작 및 필수 구문배열 퀴즈
+              </h3>
+            </div>
+            <span class="text-xs text-natural-green font-semibold bg-natural-sidebar px-2.5 py-1 rounded-full border border-natural-border">
+              관계사/분사 완벽마스터
+            </span>
+          </div>
+
+          <!-- Progress Panel -->
+          <div class="bg-white rounded-[24px] p-5 shadow-[0_10px_30px_rgba(93,109,62,0.03)] border border-natural-border flex items-center justify-between">
+            <div class="space-y-1 flex-1 mr-6">
+              <div class="flex justify-between text-xs text-natural-tan font-mono">
+                <span id="syntax-progress-text">PROGRESS: 1 / 3</span>
+                <span id="syntax-progress-percent">33%</span>
+              </div>
+              <div class="h-2 bg-natural-sidebar rounded-full overflow-hidden border border-natural-border/30">
+                <div id="syntax-progress-bar" class="h-full bg-natural-green rounded-full transition-all duration-300" style="width: 33%"></div>
+              </div>
+            </div>
+            <div class="bg-natural-sidebar px-4 py-2 rounded-xl text-center border border-natural-border shrink-0">
+              <span class="block text-[10px] text-natural-tan font-semibold tracking-wider font-sans">SCORE</span>
+              <span id="syntax-score-display" class="text-lg font-bold text-natural-green">0</span>
+            </div>
+          </div>
+
+          <!-- Active Card -->
+          <div id="syntax-quiz-card" class="bg-white rounded-[40px] shadow-[0_20px_50px_rgba(93,109,62,0.08)] border border-natural-border p-8 md:p-12 relative animate-slide-up">
+            <div class="flex items-center justify-between mb-5">
+              <span id="syntax-target-grammar" class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-natural-sidebar text-natural-green border border-natural-border">
+                ⚡ 핵심 구문: 관계대명사 주격
+              </span>
+              <span id="syntax-question-counter" class="text-xs text-natural-tan font-mono bg-natural-sidebar px-2.5 py-1 rounded-lg border border-natural-border">Q_A_1</span>
+            </div>
+
+            <!-- Korean Clue Box -->
+            <div class="mb-6 bg-natural-sidebar border border-natural-border p-5 rounded-[24px]">
+              <span class="block text-xs font-bold text-natural-tan mb-1 tracking-wider uppercase">한국어 해석</span>
+              <p id="syntax-target-korean" class="text-lg font-bold text-natural-text leading-relaxed md:text-xl">
+                저기에서 피아노를 치고 있는 소년은 내 동생이다.
+              </p>
+            </div>
+
+            <!-- Constructed Sentence Box -->
+            <div class="mb-6">
+              <span class="block text-xs font-semibold text-natural-tan mb-2">어순을 배열하여 문장을 완성하세요:</span>
+              <div id="syntax-builder-area" class="min-h-[4.5rem] bg-natural-cream/30 border-2 border-dashed border-natural-border rounded-2xl p-4 flex flex-wrap gap-2 items-center">
+                <!-- Clicked cards display -->
+              </div>
+              <div class="flex justify-end mt-2">
+                <button
+                  id="btn-syntax-reset-builder"
+                  class="inline-flex items-center gap-1.5 text-xs text-natural-tan hover:text-natural-green transition-colors font-semibold border border-natural-border rounded-lg px-2.5 py-1 hover:bg-natural-sidebar cursor-pointer"
+                >
+                  <i data-lucide="undo" class="w-3.5 h-3.5"></i>
+                  카드 초기화
+                </button>
+              </div>
+            </div>
+
+            <!-- Available Candidate Pool -->
+            <div class="mb-6">
+              <span class="block text-xs font-semibold text-natural-tan mb-2">단어 금고 (Word Pool)</span>
+              <div id="syntax-word-pool" class="flex flex-wrap gap-2.5 p-4 bg-natural-sidebar border border-natural-border rounded-2xl min-h-[5.5rem] items-center justify-center">
+                <!-- Candiate word pile -->
+              </div>
+            </div>
+
+            <!-- Verification Textbox -->
+            <div class="mb-8">
+              <div class="flex items-center justify-between mb-2">
+                <span class="block text-xs font-semibold text-natural-tan">최종 정답 문장 확인 (클릭 시 자동 업데이트됩니다):</span>
+                <span class="text-[10px] text-natural-green bg-natural-sidebar border border-natural-border px-2 py-0.5 rounded-md font-mono font-bold">EDITABLE</span>
+              </div>
+              <div class="relative">
+                <input
+                  type="text"
+                  id="syntax-manual-input"
+                  placeholder="문장을 기입하거나 카드를 클릭해 직접 순서를 조정하세요."
+                  class="w-full bg-white border border-natural-border rounded-2xl px-4 py-3.5 pr-11 text-base text-natural-text focus:outline-none focus:ring-2 focus:ring-natural-green focus:border-transparent font-sans font-medium transition-all"
+                />
+                <div class="absolute right-3 top-1/2 -translate-y-1/2 text-natural-tan">
+                  <i data-lucide="corner-down-left" class="w-4 h-4"></i>
+                </div>
+              </div>
+              <div class="mt-1.5 flex gap-1.5 items-center text-[11px] text-natural-tan ml-1 font-medium">
+                <i data-lucide="alert-circle" class="w-3.5 h-3.5 text-natural-green"></i>
+                <span>대소문자 및 마침표(.)는 채점 시 유연하게 자동 적용됩니다. 걱정 마세요!</span>
+              </div>
+            </div>
+
+            <!-- Control Action Panel -->
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-t border-natural-border pt-6">
+              <div id="syntax-feedback-wrapper" class="flex-1">
+                <!-- Feedback rendered via JS -->
+              </div>
+              <div class="shrink-0">
+                <button
+                  id="btn-syntax-submit"
+                  class="px-6 py-3 rounded-2xl font-bold transition-all shadow-xs bg-natural-sidebar text-natural-tan/60 border border-natural-border/60 cursor-not-allowed"
+                  disabled
+                >
+                  제출 및 채점하기
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Completed Block -->
+          <div id="syntax-completion-card" class="hidden bg-white rounded-[40px] shadow-[0_20px_50px_rgba(93,109,62,0.08)] border border-natural-border p-8 md:p-12 text-center relative overflow-hidden animate-slide-up">
+            <div class="absolute top-1/2 left-0 w-44 h-44 bg-natural-green/5 rounded-full blur-3xl -z-10"></div>
+            <div class="absolute top-12 right-0 w-44 h-44 bg-natural-tan/5 rounded-full blur-3xl -z-10"></div>
+
+            <div class="w-20 h-20 bg-natural-sidebar border border-natural-border rounded-full flex items-center justify-center mx-auto mb-6">
+              <i data-lucide="award" class="w-12 h-12 text-natural-tan"></i>
+            </div>
+            <h3 class="text-2xl font-serif font-bold text-natural-text mb-2">🎉 구문 배열 챌린지 전체 완료!</h3>
+            <p class="text-natural-tan mb-6">관계대명사, 분사구문 등 핵심 영어 구문을 완전히 마스터했습니다.</p>
+
+            <div class="grid grid-cols-2 gap-4 max-w-sm mx-auto mb-8">
+              <div class="bg-natural-sidebar p-4 rounded-2xl border border-natural-border">
+                <span class="block text-xs text-natural-tan font-medium">최종 점수</span>
+                <span id="syntax-final-score" class="text-2xl font-bold text-natural-text">0 <span class="text-sm font-normal text-natural-tan">/ 3</span></span>
+              </div>
+              <div class="bg-natural-sidebar p-4 rounded-2xl border border-natural-border">
+                <span class="block text-xs text-natural-tan font-medium">정답률</span>
+                <span id="syntax-final-rate" class="text-2xl font-bold text-natural-green">0%</span>
+              </div>
+            </div>
+
+            <button
+              id="btn-syntax-restart"
+              class="inline-flex items-center gap-2 px-6 py-3 bg-natural-green text-white rounded-xl font-medium hover:opacity-90 transition-colors cursor-pointer"
+            >
+              <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+              처음부터 다시 연습하기
+            </button>
+          </div>
+        </div>
+
+        <!-- SECTION 3: WRONG REVIEW NOTEBOOK VIEW (Hidden by default) -->
+        <div id="section-wrongs" class="hidden space-y-6">
+          <div class="flex items-center justify-between px-2">
+            <div class="flex items-center gap-2">
+              <i data-lucide="book-marked" class="w-5 h-5 text-natural-green"></i>
+              <h3 class="text-lg font-bold text-natural-text">
+                📕 실시간 오답 분석 노트
+              </h3>
+            </div>
+            <button
+              id="btn-clear-wrongs"
+              class="hidden text-xs text-[#E36B5F] hover:text-red-800 font-bold bg-rose-50 hover:bg-rose-100 border border-rose-100 px-3 py-1.5 rounded-xl transition-all cursor-pointer"
+            >
+              오답 노트 비우기
+            </button>
+          </div>
+
+          <!-- Empty notebook state -->
+          <div id="empty-wrongs-view" class="bg-white rounded-[40px] shadow-[0_20px_50px_rgba(93,109,62,0.08)] border border-natural-border p-12 text-center animate-slide-up">
+            <div class="w-16 h-16 bg-natural-sidebar border border-natural-border rounded-full flex items-center justify-center mx-auto mb-4">
+              <i data-lucide="award" class="w-8 h-8 text-natural-green"></i>
+            </div>
+            <h4 class="text-base font-bold text-natural-text">오답 분석 노트가 비어 있습니다!</h4>
+            <p class="text-xs text-natural-tan max-w-sm mx-auto mt-1 leading-normal">
+              아직 오답이 없거나 퀴즈를 모두 성공적으로 풀었습니다. 틀린 문항이 발생하면 이곳에 기록이 실시간으로 분류됩니다.
+            </p>
+          </div>
+
+          <!-- Filled list state -->
+          <div id="wrongs-list" class="hidden space-y-4">
+            <!-- Dynamic elements loaded via JS -->
+          </div>
+        </div>
+
+        <!-- SECTION 4: TEACHER CONFIG PANEL (Hidden by default) -->
+        <div id="section-teacher" class="hidden space-y-8">
+          <!-- Main Intro Banner -->
+          <div class="bg-[#3E3B37] text-[#FDFCF6] rounded-[40px] p-6 md:p-8 border border-natural-border shadow-[0_15px_40px_rgba(62,59,55,0.15)] relative overflow-hidden animate-slide-up">
+            <div class="absolute top-1/2 left-0 w-64 h-64 bg-[#5D6D3E]/10 rounded-full blur-3xl -z-10"></div>
+            <h3 class="text-xl md:text-2xl font-serif italic font-bold flex items-center gap-2 text-white">
+              👨‍🏫 실시간 선생님 모드 (Educator Center)
+            </h3>
+            <p class="text-natural-cream/80 text-sm mt-1.5 max-w-2xl leading-relaxed">
+              여기서 수정하신 영어 단어와 어배열 퀴즈들은 학생들의 브라우저 로컬 저장소에 곧바로 반영됩니다. 수업 진도에 맞추어 오늘의 출제 범위를 유연하게 수정하고 복원할 수 있습니다.
+            </p>
+            <div class="mt-6 flex flex-wrap items-center gap-3.5 pt-6 border-t border-[#F7F5EE]/10">
+              <button
+                id="btn-teacher-reset-default"
+                class="inline-flex items-center gap-2 px-4 py-2 bg-[#5D6D3E] hover:bg-opacity-90 text-white rounded-xl text-xs font-semibold tracking-wide transition-colors cursor-pointer border border-[#5D6D3E]"
+              >
+                <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-white/85"></i>
+                학년 초 기본 커리큘럼값으로 리셋
+              </button>
+            </div>
+          </div>
+
+          <!-- Teacher navigation submenu tabs -->
+          <div class="flex border-b border-natural-border">
+            <button
+              id="teacher-subtab-vocab-btn"
+              class="px-5 py-3 text-sm font-bold border-b-2 transition-all cursor-pointer border-natural-green text-natural-green"
+            >
+              📝 어휘 데이터 관리 (<span id="teacher-subtab-vocab-count">0</span>)
+            </button>
+            <button
+              id="teacher-subtab-syntax-btn"
+              class="px-5 py-3 text-sm font-bold border-b-2 transition-all cursor-pointer border-transparent text-natural-tan hover:text-natural-text"
+            >
+              🧩 구문 배열 관리 (<span id="teacher-subtab-syntax-count">0</span>)
+            </button>
+            <button
+              id="teacher-subtab-backup-btn"
+              class="px-5 py-3 text-sm font-bold border-b-2 transition-all cursor-pointer border-transparent text-natural-tan hover:text-natural-text"
+            >
+              💾 JSON 전체 백업 & 복원
+            </button>
+          </div>
+
+          <!-- SUBTAB CONTAINER A: VOCAB CONTROLS -->
+          <div id="teacher-container-vocab" class="grid grid-cols-1 xl:grid-cols-12 gap-8 animate-slide-up">
+            <!-- Creation / Edit Form -->
+            <div class="xl:col-span-5 bg-white p-6 rounded-[24px] border border-natural-border shadow-xs h-fit space-y-4">
+              <h4 id="teacher-vocab-form-title" class="text-sm font-bold text-natural-text uppercase tracking-wider flex items-center gap-1.5">
+                <i data-lucide="layers" class="w-4 h-4 text-natural-green"></i>
+                새로운 필수 어휘 추가
+              </h4>
+
+              <form id="teacher-vocab-form" class="space-y-4">
+                <div>
+                  <label class="block text-xs font-semibold text-natural-tan mb-1">영어 단어 (Word)</label>
+                  <input
+                    type="text"
+                    id="teacher-vocab-input-word"
+                    placeholder="예: comprehend, perspective"
+                    class="w-full bg-natural-sidebar border border-natural-border rounded-xl px-4 py-2.5 text-sm text-natural-text focus:outline-none focus:ring-2 focus:ring-natural-green font-sans"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label class="block text-xs font-semibold text-natural-tan mb-1">올바른 뜻 (정답이자 1번 보기)</label>
+                  <input
+                    type="text"
+                    id="teacher-vocab-input-answer"
+                    placeholder="예: 이해하다, 관점"
+                    class="w-full bg-natural-sidebar border border-natural-border rounded-xl px-4 py-2.5 text-sm text-natural-text focus:outline-none focus:ring-2 focus:ring-natural-green"
+                    required
+                  />
+                </div>
+
+                <div class="space-y-2 pt-1">
+                  <label class="block text-xs font-semibold text-natural-tan">틀린 보기 3가지 (오답 선택지)</label>
+                  <input
+                    type="text"
+                    id="teacher-vocab-input-wrong1"
+                    placeholder="오답 1지망"
+                    class="w-full bg-natural-sidebar border border-natural-border rounded-xl px-4 py-2.5 text-xs text-natural-text focus:outline-none focus:ring-2 focus:ring-natural-green"
+                    required
+                  />
+                  <input
+                    type="text"
+                    id="teacher-vocab-input-wrong2"
+                    placeholder="오답 2지망"
+                    class="w-full bg-natural-sidebar border border-natural-border rounded-xl px-4 py-2.5 text-xs text-natural-text focus:outline-none focus:ring-2 focus:ring-natural-green"
+                    required
+                  />
+                  <input
+                    type="text"
+                    id="teacher-vocab-input-wrong3"
+                    placeholder="오답 3지망"
+                    class="w-full bg-natural-sidebar border border-natural-border rounded-xl px-4 py-2.5 text-xs text-natural-text focus:outline-none focus:ring-2 focus:ring-natural-green"
+                    required
+                  />
+                </div>
+
+                <div class="flex gap-2 pt-4">
+                  <button
+                    type="submit"
+                    class="flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-natural-green hover:opacity-90 text-white rounded-xl text-xs font-bold transition-all cursor-pointer shadow-xs"
+                  >
+                    <i data-lucide="save" class="w-3.5 h-3.5"></i>
+                    <span id="teacher-vocab-form-submit-label">새로운 단어 출원 등록</span>
+                  </button>
+                  <button
+                    type="button"
+                    id="btn-teacher-vocab-cancel-edit"
+                    class="hidden px-4 py-2.5 bg-natural-sidebar hover:bg-[#E8E4D8]/50 text-natural-text border border-natural-border rounded-xl text-xs transition-colors cursor-pointer font-medium"
+                  >
+                    취소
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <!-- List display -->
+            <div class="xl:col-span-7 bg-white p-6 rounded-[24px] border border-natural-border shadow-xs space-y-4">
+              <h4 class="text-sm font-bold text-natural-text uppercase tracking-wider">
+                등록된 영어 어휘
+              </h4>
+              <div id="teacher-vocab-list-container" class="divide-y divide-natural-border max-h-[460px] overflow-y-auto pr-2">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+          </div>
+
+          <!-- SUBTAB CONTAINER B: SYNTAX CONTROLS (Hidden by default) -->
+          <div id="teacher-container-syntax" class="hidden grid grid-cols-1 xl:grid-cols-12 gap-8 animate-slide-up">
+            <!-- Creation / Edit Form -->
+            <div class="xl:col-span-5 bg-white p-6 rounded-[24px] border border-natural-border shadow-xs h-fit space-y-4">
+              <h4 id="teacher-syntax-form-title" class="text-sm font-bold text-natural-text uppercase tracking-wider flex items-center gap-1.5">
+                <i data-lucide="plus" class="w-4 h-4 text-natural-green"></i>
+                새로운 배열 구문 출제
+              </h4>
+
+              <form id="teacher-syntax-form" class="space-y-4">
+                <div>
+                  <label class="block text-xs font-semibold text-natural-tan mb-1">핵심 어법 범주 (Grammar Target)</label>
+                  <input
+                    type="text"
+                    id="teacher-syntax-input-grammar"
+                    placeholder="예: 관계대명사 주격, 분사구문, 가정법 과거"
+                    class="w-full bg-natural-sidebar border border-natural-border rounded-xl px-4 py-2.5 text-sm text-natural-text focus:outline-none focus:ring-2 focus:ring-natural-green font-sans"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label class="block text-xs font-semibold text-natural-tan mb-1">한국어 신조 해석 (Korean Translation)</label>
+                  <textarea
+                    id="teacher-syntax-input-korean"
+                    placeholder="한국어 유도해석 입력..."
+                    class="w-full bg-natural-sidebar border border-natural-border rounded-xl px-4 py-2.5 text-xs text-natural-text focus:outline-none focus:ring-2 focus:ring-natural-green h-16 resize-none"
+                    required
+                  ></textarea>
+                </div>
+
+                <div>
+                  <label class="block text-xs font-semibold text-natural-tan mb-1">모범 정용 영어 평서문 (Correct Answer English)</label>
+                  <input
+                    type="text"
+                    id="teacher-syntax-input-answer"
+                    placeholder="문장기호(마침표 등) 제외하고 영어의 순서 전체 기입"
+                    class="w-full bg-natural-sidebar border border-natural-border rounded-xl px-4 py-2.5 text-sm text-natural-text focus:outline-none focus:ring-2 focus:ring-natural-green font-sans"
+                    required
+                  />
+                </div>
+
+                <div class="bg-natural-sidebar p-3.5 rounded-xl border border-natural-border flex items-start gap-1.5 text-[11px] text-natural-tan leading-normal">
+                  <i data-lucide="arrow-down" class="w-4 h-4 shrink-0 mt-0.5 text-natural-green"></i>
+                  <span>
+                    <strong>자동 스마트 공정:</strong> 입력한 모범 영어 본문은 한 단어씩 자동 해체되어, 학생들이 조합에 필요한 낱장 카드블록으로 자동 생성됩니다! (단, 콤마 등 부호 제거 추천)
+                  </span>
+                </div>
+
+                <div class="flex gap-2 pt-2">
+                  <button
+                    type="submit"
+                    class="flex-1 inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-natural-green hover:opacity-90 text-white rounded-xl text-xs font-bold transition-all cursor-pointer shadow-xs"
+                  >
+                    <i data-lucide="save" class="w-3.5 h-3.5"></i>
+                    <span id="teacher-syntax-form-submit-label">신규 어순 카드 출제</span>
+                  </button>
+                  <button
+                    type="button"
+                    id="btn-teacher-syntax-cancel-edit"
+                    class="hidden px-4 py-2.5 bg-natural-sidebar hover:bg-[#E8E4D8]/50 text-natural-text border border-natural-border rounded-xl text-xs transition-colors cursor-pointer font-medium"
+                  >
+                    취소
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <!-- List display -->
+            <div class="xl:col-span-7 bg-white p-6 rounded-[24px] border border-natural-border shadow-xs space-y-4">
+              <h4 class="text-sm font-bold text-natural-text uppercase tracking-wider">
+                과정 등록된 구문 문항
+              </h4>
+              <div id="teacher-syntax-list-container" class="divide-y divide-natural-border max-h-[460px] overflow-y-auto pr-2">
+                <!-- Dynamically populated -->
+              </div>
+            </div>
+          </div>
+
+          <!-- SUBTAB CONTAINER C: BACKUP & RESTORE (Hidden by default) -->
+          <div id="teacher-container-backup" class="hidden bg-white p-6 md:p-8 rounded-[32px] border border-natural-border shadow-xs space-y-6 animate-slide-up">
+            <div class="flex items-center gap-2 border-b border-natural-border pb-3">
+              <i data-lucide="database" class="w-5 h-5 text-natural-green"></i>
+              <h4 class="font-serif italic font-bold text-natural-text text-base">클라우드 파일 보관함 대용 JSON 백업 & 복원 엔진</h4>
+            </div>
+
+            <p class="text-xs text-natural-tan leading-normal max-w-3xl">
+              잠일고 퀴즈 데이터셋은 브라우저 공간에 저장되지만, 브라우저 캐시 정리 시 유실될 우려가 있습니다. 아래의 생성 덤프(JSON) 텍스트 전체를 복사하여 개인 메모장이나 텍스트 파일(.txt)에 백업해 두세요! 추후 다른 컴퓨터나 브라우저에서 텍스트를 그대로 붙여 넣으면 출제 현황이 복원됩니다.
+            </p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 pt-2">
+              
+              <!-- Export area -->
+              <div class="space-y-3">
+                <div class="flex items-center justify-between gap-2 flex-wrap">
+                  <span class="text-xs font-bold text-natural-tan flex items-center gap-1">
+                    <i data-lucide="file-text" class="w-4 h-4 text-natural-green"></i>
+                    현재 출제 문항 백업 텍스트 (Export)
+                  </span>
+                  <button
+                    id="btn-teacher-copy-backup"
+                    class="inline-flex items-center gap-1 text-[11px] text-natural-green hover:bg-natural-sidebar border border-natural-border rounded-lg px-2.5 py-1.5 transition-all cursor-pointer font-bold shadow-xs whitespace-nowrap"
+                  >
+                    <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                    <span id="btn-teacher-copy-text">클립보드 전체 복사</span>
+                  </button>
+                </div>
+                <textarea
+                  id="teacher-backup-export-textarea"
+                  readonly
+                  class="w-full bg-natural-sidebar/30 border border-natural-border rounded-xl px-3.5 py-4 text-[10px] text-natural-text font-mono h-48 focus:outline-none focus:ring-0 leading-normal"
+                ></textarea>
+              </div>
+
+              <!-- Import area -->
+              <div class="space-y-3">
+                <span class="text-xs font-bold text-natural-tan flex items-center gap-1">
+                  <i data-lucide="arrow-left-right" class="w-3.5 h-3.5 text-natural-green"></i>
+                  백업 데이터 불러오기 (Import)
+                </span>
+                <textarea
+                  id="teacher-backup-import-textarea"
+                  placeholder="여기에 생성해두었던 백업 JSON 구조 문자열을 붙여넣으세요..."
+                  class="w-full bg-white border border-natural-border rounded-xl px-3.5 py-4 text-[10px] text-natural-text font-mono h-48 focus:outline-none focus:ring-2 focus:ring-natural-green leading-normal"
+                ></textarea>
+                <div class="flex items-center justify-between gap-4 pt-1 flex-wrap">
+                  <div id="teacher-backup-status-wrapper">
+                    <!-- Status logs printed via JS -->
+                  </div>
+                  <button
+                    id="btn-teacher-apply-backup"
+                    class="px-4 py-2 bg-natural-green hover:opacity-90 text-white text-xs font-bold rounded-xl transition-all shadow-xs shrink-0 cursor-pointer"
+                  >
+                    백업본 이식 및 적용
+                  </button>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Page Logic Script -->
+    <script src="/script.js" type="module"></script>
+  </body>
+</html>
