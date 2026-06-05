@@ -305,8 +305,39 @@
               </h3>
             </div>
             <span class="text-xs text-natural-green font-semibold bg-natural-sidebar px-2.5 py-1 rounded-full border border-natural-border">
-              관계사/분사 완벽마스터
+              2022 개정 영어 I 완벽마스터
             </span>
+          </div>
+
+          <!-- Category Filtering Tabs for Syntax -->
+          <div class="bg-white rounded-[24px] p-4 shadow-[0_10px_30px_rgba(93,109,62,0.03)] border border-natural-border flex flex-col md:flex-row gap-3 items-start md:items-center">
+            <div class="flex items-center gap-2 text-xs font-bold text-natural-text shrink-0 pb-2 md:pb-0 md:border-r md:border-natural-border md:pr-4">
+              <i data-lucide="filter" class="w-3.5 h-3.5 text-natural-green"></i>
+              구문 종류별 선택 학습
+            </div>
+            <div id="syntax-category-tabs" class="flex flex-wrap gap-1.5 flex-1 w-full">
+              <button onclick="filterSyntaxCategory('ALL')" id="syntax-cat-tab-all" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold cursor-pointer transition-all bg-natural-green text-white shadow-xs">
+                전체보기
+              </button>
+              <button onclick="filterSyntaxCategory('관계사')" id="syntax-cat-tab-relative" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold cursor-pointer transition-all bg-natural-sidebar text-natural-tan hover:bg-natural-border/40 hover:text-natural-text">
+                관계사
+              </button>
+              <button onclick="filterSyntaxCategory('분사')" id="syntax-cat-tab-participle" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold cursor-pointer transition-all bg-natural-sidebar text-natural-tan hover:bg-natural-border/40 hover:text-natural-text">
+                분사구문
+              </button>
+              <button onclick="filterSyntaxCategory('가정법')" id="syntax-cat-tab-subjunctive" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold cursor-pointer transition-all bg-natural-sidebar text-natural-tan hover:bg-natural-border/40 hover:text-natural-text">
+                가정법
+              </button>
+              <button onclick="filterSyntaxCategory('명사절')" id="syntax-cat-tab-noun" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold cursor-pointer transition-all bg-natural-sidebar text-natural-tan hover:bg-natural-border/40 hover:text-natural-text">
+                명사절/접속사
+              </button>
+              <button onclick="filterSyntaxCategory('특수구문')" id="syntax-cat-tab-special" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold cursor-pointer transition-all bg-natural-sidebar text-natural-tan hover:bg-natural-border/40 hover:text-natural-text">
+                도치/특수
+              </button>
+              <button onclick="filterSyntaxCategory('비교')" id="syntax-cat-tab-compare" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold cursor-pointer transition-all bg-natural-sidebar text-natural-tan hover:bg-natural-border/40 hover:text-natural-text">
+                비교구문
+              </button>
+            </div>
           </div>
 
           <!-- Progress Panel -->
@@ -620,10 +651,19 @@
                   <input
                     type="text"
                     id="teacher-syntax-input-grammar"
-                    placeholder="예: 관계대명사 주격, 분사구문, 가정법 과거"
+                    placeholder="예: [관계사] 주격 관계대명사"
                     class="w-full bg-natural-sidebar border border-natural-border rounded-xl px-4 py-2.5 text-sm text-natural-text focus:outline-none focus:ring-2 focus:ring-natural-green font-sans"
                     required
                   />
+                  <div class="mt-1.5 flex flex-wrap gap-1 items-center">
+                    <span class="text-[9px] text-natural-tan font-semibold mr-1 select-none">분류 추천:</span>
+                    <button type="button" class="px-2 py-0.5 bg-natural-sidebar text-[10px] text-natural-green border border-natural-border/60 hover:border-natural-green rounded-md cursor-pointer transition-colors" onclick="document.getElementById('teacher-syntax-input-grammar').value='[관계사] 신규 구문'; showToast('🚀 관계사 프리셋이 기입되었습니다.')">#관계사</button>
+                    <button type="button" class="px-2 py-0.5 bg-natural-sidebar text-[10px] text-natural-green border border-natural-border/60 hover:border-natural-green rounded-md cursor-pointer transition-colors" onclick="document.getElementById('teacher-syntax-input-grammar').value='[분사] 신규 구문'; showToast('🚀 분사구문 프리셋이 기입되었습니다.')">#분사구문</button>
+                    <button type="button" class="px-2 py-0.5 bg-natural-sidebar text-[10px] text-natural-green border border-natural-border/60 hover:border-natural-green rounded-md cursor-pointer transition-colors" onclick="document.getElementById('teacher-syntax-input-grammar').value='[가정법] 신규 구문'; showToast('🚀 가정법 프리셋이 기입되었습니다.')">#가정법</button>
+                    <button type="button" class="px-2 py-0.5 bg-natural-sidebar text-[10px] text-natural-green border border-natural-border/60 hover:border-natural-green rounded-md cursor-pointer transition-colors" onclick="document.getElementById('teacher-syntax-input-grammar').value='[명사절] 신규 구문'; showToast('🚀 명사절 프리셋이 기입되었습니다.')">#명사절</button>
+                    <button type="button" class="px-2 py-0.5 bg-natural-sidebar text-[10px] text-natural-green border border-natural-border/60 hover:border-natural-green rounded-md cursor-pointer transition-colors" onclick="document.getElementById('teacher-syntax-input-grammar').value='[특수구문] 신규 구문'; showToast('🚀 특수구문 프리셋이 기입되었습니다.')">#도치/특수</button>
+                    <button type="button" class="px-2 py-0.5 bg-natural-sidebar text-[10px] text-natural-green border border-natural-border/60 hover:border-natural-green rounded-md cursor-pointer transition-colors" onclick="document.getElementById('teacher-syntax-input-grammar').value='[비교] 신규 구문'; showToast('🚀 비교구문 프리셋이 기입되었습니다.')">#비교구문</button>
+                  </div>
                 </div>
 
                 <div>

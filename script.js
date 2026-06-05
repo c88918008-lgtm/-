@@ -163,12 +163,22 @@ let vocabShuffledOptions = [];
 let isPlayingAudio = false;
 
 // Syntax Quiz States
+let activeSyntaxCategory = 'ALL';
 let syntaxIndex = 0;
 let syntaxScore = 0;
 let syntaxAnswered = false;
 let syntaxSelectedWords = [];
 let syntaxWordBank = [];
 let syntaxTypedInput = '';
+
+function getFilteredSyntaxes() {
+  if (activeSyntaxCategory === 'ALL') {
+    return syntaxData;
+  }
+  return syntaxData.filter(item => {
+    return item.grammar && item.grammar.includes(`[${activeSyntaxCategory}]`);
+  });
+}
 
 // Teacher Edit Indicators
 let editingVocabIdx = null;
@@ -265,9 +275,18 @@ function saveToLocalStorage() {
 }
 
 function loadFromLocalStorage() {
+  const CURRENT_DATA_VERSION = 'jamilgo_v2026_data_v4';
+  const savedVer = localStorage.getItem('jamilgo_data_version');
+  
+  let forceReset = false;
+  if (savedVer !== CURRENT_DATA_VERSION) {
+    forceReset = true;
+    localStorage.setItem('jamilgo_data_version', CURRENT_DATA_VERSION);
+  }
+
   // Vocabs
   const savedVocab = localStorage.getItem('jamilgo_vocab_data') || localStorage.getItem('jamgilo_vocab_data');
-  if (savedVocab) {
+  if (savedVocab && !forceReset) {
     try { vocabData = JSON.parse(savedVocab); } catch (e) { vocabData = [...DEFAULT_VOCAB_DATA]; }
   } else {
     vocabData = [...DEFAULT_VOCAB_DATA];
@@ -275,7 +294,7 @@ function loadFromLocalStorage() {
 
   // Syntaxes
   const savedSyntax = localStorage.getItem('jamilgo_syntax_data') || localStorage.getItem('jamgilo_syntax_data');
-  if (savedSyntax) {
+  if (savedSyntax && !forceReset) {
     try { syntaxData = JSON.parse(savedSyntax); } catch (e) { syntaxData = [...DEFAULT_SYNTAX_DATA]; }
   } else {
     syntaxData = [...DEFAULT_SYNTAX_DATA];
@@ -283,20 +302,35 @@ function loadFromLocalStorage() {
 
   // Quiz History
   const savedHistory = localStorage.getItem('jamilgo_quiz_history') || localStorage.getItem('jamgilo_quiz_history');
-  if (savedHistory) {
+  if (savedHistory && !forceReset) {
     try { quizHistory = JSON.parse(savedHistory); } catch (e) { quizHistory = []; }
   } else {
     quizHistory = [];
   }
 
-  // Progress variables
-  vocabIndex = Number(localStorage.getItem('jamilgo_vocab_index') || localStorage.getItem('jamgilo_vocab_index') || '0');
-  vocabScore = Number(localStorage.getItem('jamilgo_vocab_score') || localStorage.getItem('jamgilo_vocab_score') || '0');
-  vocabAnswered = (localStorage.getItem('jamilgo_vocab_answered') || localStorage.getItem('jamgilo_vocab_answered')) === 'true';
+  if (forceReset) {
+    vocabIndex = 0;
+    vocabScore = 0;
+    vocabAnswered = false;
+    
+    activeSyntaxCategory = 'ALL';
+    syntaxIndex = 0;
+    syntaxScore = 0;
+    syntaxAnswered = false;
+    syntaxSelectedWords = [];
+    syntaxWordBank = [];
+    syntaxTypedInput = '';
+    saveToLocalStorage();
+  } else {
+    // Progress variables
+    vocabIndex = Number(localStorage.getItem('jamilgo_vocab_index') || localStorage.getItem('jamgilo_vocab_index') || '0');
+    vocabScore = Number(localStorage.getItem('jamilgo_vocab_score') || localStorage.getItem('jamgilo_vocab_score') || '0');
+    vocabAnswered = (localStorage.getItem('jamilgo_vocab_answered') || localStorage.getItem('jamgilo_vocab_answered')) === 'true';
 
-  syntaxIndex = Number(localStorage.getItem('jamilgo_syntax_index') || localStorage.getItem('jamgilo_syntax_index') || '0');
-  syntaxScore = Number(localStorage.getItem('jamilgo_syntax_score') || localStorage.getItem('jamgilo_syntax_score') || '0');
-  syntaxAnswered = (localStorage.getItem('jamilgo_syntax_answered') || localStorage.getItem('jamgilo_syntax_answered')) === 'true';
+    syntaxIndex = Number(localStorage.getItem('jamilgo_syntax_index') || localStorage.getItem('jamgilo_syntax_index') || '0');
+    syntaxScore = Number(localStorage.getItem('jamilgo_syntax_score') || localStorage.getItem('jamgilo_syntax_score') || '0');
+    syntaxAnswered = (localStorage.getItem('jamilgo_syntax_answered') || localStorage.getItem('jamgilo_syntax_answered')) === 'true';
+  }
 }
 
 function handleAddHistory(type, item, userAnswer, correctAnswer, isCorrect) {
@@ -330,8 +364,49 @@ function updateSidebarCounters() {
 
   // Sidebar progress panels
   document.getElementById('sidebar-vocab-progress-label').innerText = `${vocabIndex} / ${vocabData.length}`;
-  document.getElementById('sidebar-syntax-progress-label').innerText = `${syntaxIndex} / ${syntaxData.length}`;
+  
+  const currentFiltered = getFilteredSyntaxes();
+  const filterSuffix = activeSyntaxCategory !== 'ALL' ? ` [${activeSyntaxCategory}]` : '';
+  document.getElementById('sidebar-syntax-progress-label').innerText = `${syntaxIndex} / ${currentFiltered.length}${filterSuffix}`;
 }
+
+// Global Category Filter Trigger
+window.filterSyntaxCategory = function(cat) {
+  activeSyntaxCategory = cat;
+  
+  // Reset active state for the newly selected category
+  syntaxIndex = 0;
+  syntaxScore = 0;
+  syntaxAnswered = false;
+  syntaxSelectedWords = [];
+  syntaxWordBank = [];
+  syntaxTypedInput = '';
+  
+  // Sync category styling in the tabs
+  const categories = {
+    'ALL': 'syntax-cat-tab-all',
+    '관계사': 'syntax-cat-tab-relative',
+    '분사': 'syntax-cat-tab-participle',
+    '가정법': 'syntax-cat-tab-subjunctive',
+    '명사절': 'syntax-cat-tab-noun',
+    '특수구문': 'syntax-cat-tab-special',
+    '비교': 'syntax-cat-tab-compare'
+  };
+  
+  Object.entries(categories).forEach(([key, id]) => {
+    const tab = document.getElementById(id);
+    if (tab) {
+      if (key === cat) {
+        tab.className = "px-3.5 py-1.5 rounded-xl text-xs font-semibold cursor-pointer transition-all bg-natural-green text-white shadow-xs";
+      } else {
+        tab.className = "px-3.5 py-1.5 rounded-xl text-xs font-semibold cursor-pointer transition-all bg-natural-sidebar text-natural-tan hover:bg-natural-border/40 hover:text-natural-text";
+      }
+    }
+  });
+
+  initSyntaxQuiz();
+  updateSidebarCounters();
+};
 
 // Reset everything
 function resetProgressAll() {
@@ -613,13 +688,14 @@ function handleVocabRestart() {
 function initSyntaxQuiz() {
   const quizCard = document.getElementById('syntax-quiz-card');
   const completionCard = document.getElementById('syntax-completion-card');
+  const currentFiltered = getFilteredSyntaxes();
 
-  if (!syntaxData || syntaxData.length === 0) {
+  if (!currentFiltered || currentFiltered.length === 0) {
     quizCard.innerHTML = `
       <div class="text-center py-12">
         <i data-lucide="layers" class="w-12 h-12 text-natural-tan mx-auto mb-3 animate-pulse"></i>
-        <p class="text-natural-text font-serif italic text-lg font-bold">등록된 구문 배열 데이터가 없습니다.</p>
-        <p class="text-natural-tan text-sm mt-1">선생님 관리관 페이지에서 신규 구문을 출제해 주세요!</p>
+        <p class="text-natural-text font-serif italic text-lg font-bold">선택하신 분류의 구문 데이터가 없습니다.</p>
+        <p class="text-natural-tan text-sm mt-1">다른 구문 카테고리를 터치하거나 선생님 페이지에서 추가해 주세요!</p>
       </div>
     `;
     quizCard.classList.remove('hidden');
@@ -629,15 +705,15 @@ function initSyntaxQuiz() {
   }
 
   // Progress UI
-  const percent = syntaxData.length > 0 ? Math.round((syntaxIndex / syntaxData.length) * 100) : 0;
-  document.getElementById('syntax-progress-text').innerText = `PROGRESS: ${Math.min(syntaxIndex + 1, syntaxData.length)} / ${syntaxData.length}`;
+  const percent = currentFiltered.length > 0 ? Math.round((syntaxIndex / currentFiltered.length) * 100) : 0;
+  document.getElementById('syntax-progress-text').innerText = `PROGRESS: ${Math.min(syntaxIndex + 1, currentFiltered.length)} / ${currentFiltered.length}`;
   document.getElementById('syntax-progress-percent').innerText = `${percent}%`;
-  document.getElementById('syntax-progress-bar').style.width = `${(syntaxIndex / syntaxData.length) * 100}%`;
+  document.getElementById('syntax-progress-bar').style.width = `${(syntaxIndex / currentFiltered.length) * 100}%`;
   document.getElementById('syntax-score-display').innerText = syntaxScore;
 
-  if (syntaxIndex >= syntaxData.length) {
-    const rate = syntaxData.length > 0 ? Math.round((syntaxScore / syntaxData.length) * 100) : 0;
-    document.getElementById('syntax-final-score').innerHTML = `${syntaxScore} <span class="text-sm font-normal text-natural-tan">/ ${syntaxData.length}</span>`;
+  if (syntaxIndex >= currentFiltered.length) {
+    const rate = currentFiltered.length > 0 ? Math.round((syntaxScore / currentFiltered.length) * 100) : 0;
+    document.getElementById('syntax-final-score').innerHTML = `${syntaxScore} <span class="text-sm font-normal text-natural-tan">/ ${currentFiltered.length}</span>`;
     document.getElementById('syntax-final-rate').innerText = `${rate}%`;
 
     quizCard.classList.add('hidden');
@@ -648,7 +724,7 @@ function initSyntaxQuiz() {
   quizCard.classList.remove('hidden');
   completionCard.classList.add('hidden');
 
-  const currentQuestion = syntaxData[syntaxIndex];
+  const currentQuestion = currentFiltered[syntaxIndex];
   document.getElementById('syntax-target-grammar').innerText = `⚡ 핵심 어법: ${currentQuestion.grammar}`;
   document.getElementById('syntax-target-korean').innerText = currentQuestion.korean;
   document.getElementById('syntax-question-counter').innerText = `Q_A_${syntaxIndex + 1}`;
@@ -770,7 +846,7 @@ function initSyntaxQuiz() {
     submitBtn.disabled = false;
     submitBtn.className = "inline-flex items-center gap-1.5 px-6 py-3 bg-natural-green text-white font-bold rounded-2xl hover:opacity-90 transition-all cursor-pointer shadow-xs";
     submitBtn.innerHTML = `
-      <span>${syntaxIndex === syntaxData.length - 1 ? '구문 대단원 완료' : '다음 구문 도전'}</span>
+      <span>${syntaxIndex === currentFiltered.length - 1 ? '구문 대단원 완료' : '다음 구문 도전'}</span>
       <i data-lucide="arrow-right" class="w-4 h-4"></i>
     `;
     submitBtn.onclick = handleSyntaxNext;
@@ -789,7 +865,8 @@ function syncSyntaxInputAndState() {
 
 function handleSyntaxResetBuilder() {
   if (syntaxAnswered) return;
-  const currentQuestion = syntaxData[syntaxIndex];
+  const currentFiltered = getFilteredSyntaxes();
+  const currentQuestion = currentFiltered[syntaxIndex];
   if (!currentQuestion) return;
 
   syntaxSelectedWords = [];
@@ -804,7 +881,8 @@ function handleSyntaxConfirmAnswer() {
   const finalAnswer = syntaxTypedInput.trim();
   if (!finalAnswer || syntaxAnswered) return;
 
-  const currentQuestion = syntaxData[syntaxIndex];
+  const currentFiltered = getFilteredSyntaxes();
+  const currentQuestion = currentFiltered[syntaxIndex];
   
   const cleanUser = finalAnswer.toLowerCase().replace(/[.,!?]/g, '').replace(/\s+/g, ' ').trim();
   const cleanCorrect = currentQuestion.answer.toLowerCase().replace(/[.,!?]/g, '').replace(/\s+/g, ' ').trim();
